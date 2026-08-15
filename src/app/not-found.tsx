@@ -1,20 +1,19 @@
-import { Button } from "@/components/button";
-import { Container } from "@/components/container";
+import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <Container className="flex flex-col items-start py-32">
-      <p className="eyebrow">404</p>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+    <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col justify-center px-6 py-24">
+      <h1 className="text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
         This page does not exist
       </h1>
-      <p className="mt-4 max-w-md text-ink-muted">
-        The link may be out of date, or I may have moved something. The home page is a
-        good place to pick the thread back up.
+      <p className="mt-4 text-base text-ink-muted">
+        The link may be out of date, or something may have moved.
       </p>
-      <div className="mt-8">
-        <Button href="/">Back to home</Button>
-      </div>
-    </Container>
+      <p className="mt-8">
+        <Link href="/" className="text-ink underline underline-offset-4">
+          Back to the home page
+        </Link>
+      </p>
+    </div>
   );
 }

@@ -1,28 +1,15 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Footer } from "@/components/footer";
-import { Nav } from "@/components/nav";
 import { site } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
+/* No description, no Open Graph card and no canonical URL yet: those need real
+   copy and the final domain. They go in during the build phase. */
 export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
-  title: {
-    default: `${site.name} — ${site.role}`,
-    template: `%s — ${site.name}`,
-  },
-  description: site.intro,
-  openGraph: {
-    title: `${site.name} — ${site.role}`,
-    description: site.intro,
-    url: site.url,
-    siteName: site.name,
-    type: "website",
-  },
-  twitter: { card: "summary_large_image" },
+  title: site.name,
 };
 
 /**
@@ -45,22 +32,20 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full`}
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="flex min-h-full flex-col antialiased">
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:text-on-accent"
-        >
-          Skip to content
-        </a>
-        <Nav />
+        {/* Nav and footer return in the build phase, once there is more than
+            one page to navigate between. */}
         <main id="main" className="flex-1">
           {children}
         </main>
-        <Footer />
       </body>
     </html>
   );
