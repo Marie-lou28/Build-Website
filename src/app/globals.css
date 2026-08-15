@@ -5,30 +5,56 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------------------
-   Design tokens. Provisional — the real palette is chosen in the design pass,
-   once there is actual content to design around. These exist so the holding
-   page is legible in both themes, nothing more.
+   Design tokens. Every colour resolves through one of these, so retheming the
+   site means editing this block and nothing else.
+
+   Warm off-white paper with a forest-green accent, inverted for dark. Chosen
+   to sit with the outdoors material rather than to be neutral.
 --------------------------------------------------------------------------- */
 :root {
   color-scheme: light;
 
-  --bg: #fbfbfa;
-  --ink: #16161a;
-  --ink-muted: #56565f;
+  --bg: #fcfbf9;
+  --surface: #ffffff;
+  --surface-2: #f5f3ef;
+  --border: #e6e2da;
+
+  --ink: #1a1a17;
+  --ink-muted: #5c5a52;
+  --ink-faint: #86837a;
+
+  --accent: #2f6a4f;
+  --accent-soft: #e7f0ea;
 }
 
 .dark {
   color-scheme: dark;
 
-  --bg: #0b0c0e;
-  --ink: #f2f2f4;
-  --ink-muted: #a2a4ac;
+  --bg: #0e0f0d;
+  --surface: #161815;
+  --surface-2: #1c1f1b;
+  --border: #2a2e28;
+
+  --ink: #f0efea;
+  --ink-muted: #a5a69c;
+  --ink-faint: #7b7d74;
+
+  --accent: #6cc39a;
+  --accent-soft: #16291f;
 }
 
 @theme inline {
   --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+
   --color-ink: var(--ink);
   --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -36,6 +62,9 @@
 
 html {
   background-color: var(--bg);
+  /* The hero is sized with min-h-svh; smooth in-page scrolling is a nicety,
+     and the reduced-motion block below turns it off for anyone who asked. */
+  scroll-behavior: smooth;
 }
 
 body {
@@ -43,14 +72,32 @@ body {
   color: var(--ink);
 }
 
-/* Respect users who have asked the OS to reduce motion. */
+/* Small caps label used above section headings. */
+.eyebrow {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* Keyboard focus stays clearly visible everywhere. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }

@@ -1,15 +1,22 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { intro } from "@/lib/content";
 import { site } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-/* No description, no Open Graph card and no canonical URL yet: those need real
-   copy and the final domain. They go in during the build phase. */
+/* No canonical URL or social image yet — those wait for the final domain. */
 export const metadata: Metadata = {
   title: site.name,
+  description: intro.tagline,
+  openGraph: {
+    title: site.name,
+    description: intro.tagline,
+    siteName: site.name,
+    type: "website",
+  },
 };
 
 /**
@@ -41,8 +48,13 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="flex min-h-full flex-col antialiased">
-        {/* Nav and footer return in the build phase, once there is more than
-            one page to navigate between. */}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:text-bg"
+        >
+          Skip to content
+        </a>
+        {/* A nav bar arrives with /scoping, when there is somewhere to navigate. */}
         <main id="main" className="flex-1">
           {children}
         </main>
