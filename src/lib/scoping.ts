@@ -1,190 +1,318 @@
 /* ---------------------------------------------------------------------------
- * SCOPING PAGE CONTENT  —  ***DRAFT***
+ * SCOPING PAGE CONTENT
  *
- * Unlike `content.ts`, none of this is Marie-Louise's yet. It is a draft
- * written to give the page a shape to argue with: the structure is the
- * proposal, the words are a stand-in.
- *
- * The worked example below is INVENTED. No customer, team, or number in it
- * is real. It reads like a real engagement on purpose — that is what makes it
- * a useful skeleton — which is exactly why the page carries a visible draft
- * banner until the words are hers.
- *
- * To ship this page:
- *   1. Rewrite the copy below, ideally around a real engagement.
- *   2. Set `isDraft` to false. That removes the banner and nothing else.
+ * Marie-Louise's blueprint and worked example, lightly edited for reading on
+ * a page. Nothing here is invented — same rule as `content.ts`. If a claim
+ * isn't in this file, it isn't on the site, and this is the only file to edit
+ * when the wording should change.
  * ------------------------------------------------------------------------- */
 
+export type StepType = "deterministic" | "judgement" | "human";
+
+export type BlueprintStage = {
+  n: number;
+  name: string;
+  body: string;
+  /** Questions she puts to the people who own the process. */
+  ask: string[] | null;
+  /** A principle worth pulling out of the body text. Rendered with emphasis. */
+  note: string | null;
+};
+
+export type ProcessStep = { n: number; label: string; type: StepType };
+export type LabelledList = { heading: string; items: string[] };
+export type LabelledNote = { label: string; body: string };
+
+export type AlertOutput = {
+  marker: string;
+  title: string;
+  fields: { label: string; body: string }[];
+  mention: string;
+  mentionBody: string;
+};
+
+export type ExampleStage = {
+  n: number;
+  name: string;
+  paragraphs: string[];
+  lists: LabelledList[] | null;
+  steps: ProcessStep[] | null;
+  stepsSummary: string | null;
+  output: AlertOutput | null;
+  notes: LabelledNote[] | null;
+};
+
 export const page = {
-  title: "Scoping an agent",
-  /** Set to false once the copy below is Marie-Louise's own. */
-  isDraft: true,
-  draftNote:
-    "Draft. The structure is real, the worked example is invented — placeholder text written by an assistant, not by me. Nothing here describes an actual customer.",
-  lede:
-    "Everyone asks for the same thing at first: an agent that handles everything. The job is to find the one narrow thing that is worth automating, and to say out loud what we are not building.",
-} as const;
+  title: "Scoping an agentic workflow",
+  lede: "A blueprint for deciding where an agent earns its place — and a worked example.",
+};
 
-/** The vague ask that starts most engagements. Sets up everything below it. */
-export const brief = {
-  eyebrow: "The ask",
-  quote: "Can we get an AI agent to handle our support tickets?",
-  attribution: "The request, as it arrives",
-  body:
-    "This is not a scope. It is a symptom. Nine words that could mean a dozen different products, most of which would be a bad idea, and one of which is probably worth six weeks. The rest of this page is how I tell those apart.",
-} as const;
+export const blueprint = {
+  eyebrow: "Part one",
+  heading: "The blueprint",
+  lede: "Eight stages. Each one has a question I have to answer, and questions I put to the people who own the process.",
+  stages: [
+    {
+      n: 1,
+      name: "Problem and cost of the status quo",
+      body: "What breaks today, whose day it makes worse, and what it costs in hours, error rate, delay or revenue.",
+      ask: [
+        "Walk me through the last time this went wrong.",
+        "How often does it happen?",
+        "Who picks up the pieces?",
+        "What's the current workaround?",
+      ],
+      note: "Without a baseline here, stage 7 has nothing to measure against.",
+    },
+    {
+      n: 2,
+      name: "Why agentic",
+      body: "The gate, not a formality. An agent earns its place only where the input is unstructured or variable, the decision branches on context, or the work spans tools. Deterministic and repeatable means script it.",
+      ask: [
+        "What makes this hard to automate with a rule?",
+        "What does the person have to read before they can decide?",
+      ],
+      note: null,
+    },
+    {
+      n: 3,
+      name: "Decompose the process",
+      body: "Map every step, then label each one: deterministic, judgement, or human-owned. Most workflows come out mostly deterministic with two or three judgement steps.",
+      ask: null,
+      note: "That's the point — the aim is to scope the model down to the part only a model can do.",
+    },
+    {
+      n: 4,
+      name: "Boundaries",
+      body: "Inputs, tools the agent can touch, actions it must never take, explicit non-triggers, escalation path.",
+      ask: [
+        "What's the worst thing this could do with write access?",
+        "What looks like a problem but isn't?",
+      ],
+      note: null,
+    },
+    {
+      n: 5,
+      name: "Definition of done",
+      body: "Concrete examples of good output, written before anything is built — including negative cases, where the agent should stay quiet.",
+      ask: ["Who signs off, and against what standard?"],
+      note: null,
+    },
+    {
+      n: 6,
+      name: "Failure modes and blast radius",
+      body: "How I'd notice it was wrong, how reversible the mistake is, where the human checkpoint sits. Reversibility decides whether this needs approval-in-the-loop or just monitoring.",
+      ask: null,
+      note: "Some failures are technically reversible but socially expensive — those are the ones to name.",
+    },
+    {
+      n: 7,
+      name: "Pilot and measure",
+      body: "Narrow first scope, a named owner, and the stage 1 metric re-measured.",
+      ask: null,
+      note: "Precision alone isn't enough; something has to check what the agent missed.",
+    },
+    {
+      n: 8,
+      name: "What I'd change",
+      body: "Honest retrospective. What the pilot exposed that the design didn't anticipate.",
+      ask: null,
+      note: null,
+    },
+  ] satisfies BlueprintStage[],
+};
 
-/** The three stages mirror the doctor analogy on the home page. */
-export const stages = [
-  {
-    id: "ask",
-    verb: "Ask",
-    lede: "The right first move is questions, not a proposal. These are the ones that earn their place.",
-    groups: [
-      {
-        heading: "Who, and what exactly",
-        questions: [
-          "Who is asking for this, and who actually does the work today?",
-          "Which requests do you mean? Show me the last twenty that came in.",
-          "Walk me through what happens right now when one arrives.",
+/** Labels and ordering for the three step types, used by the flow and its key. */
+export const stepTypes: { type: StepType; label: string; plural: string }[] = [
+  { type: "deterministic", label: "Deterministic", plural: "deterministic" },
+  { type: "judgement", label: "Judgement", plural: "judgement" },
+  { type: "human", label: "Human-owned", plural: "human" },
+];
+
+export const example = {
+  eyebrow: "Part two",
+  heading: "Project Risk Agent",
+  lede: "The same eight stages, applied.",
+  stages: [
+    {
+      n: 1,
+      name: "Problem and cost of the status quo",
+      paragraphs: [
+        "Project risks are spotted late or not at all. Today the team relies on someone noticing that something is off — usually in standup or a weekly review, and usually after the fact. Risks sit undetected for days.",
+        "Twice in a six-month period this caused a project to slip into the following quarter, deferring roughly 200k of revenue each time. The cost is not only revenue: late detection creates internal bottlenecks and erodes customer confidence in delivery dates.",
+      ],
+      lists: null,
+      steps: null,
+      stepsSummary: null,
+      output: null,
+      notes: null,
+    },
+    {
+      n: 2,
+      name: "Why agentic",
+      paragraphs: [
+        "The workflow splits in two, and only one half needs a model.",
+        "Detection is deterministic. A scheduled query finds tasks whose due date has moved, or that are still in To Do with a deadline inside 48 hours. No reasoning required.",
+        "Interpretation is not. The signals that matter most are buried in comments, threads, linked issues and attached documents — an engineer noting a dependency is blocked, a comment saying required evidence is missing. Reading that context, judging whether it constitutes a real risk, and articulating the impact is the part that needs a model.",
+        "Scoping it this way keeps the system cheap and predictable, and makes wrong decisions easy to trace.",
+      ],
+      lists: null,
+      steps: null,
+      stepsSummary: null,
+      output: null,
+      notes: null,
+    },
+    {
+      n: 3,
+      name: "Decompose the process",
+      paragraphs: [],
+      lists: null,
+      steps: [
+        { n: 1, label: "Detect trigger (date change, approaching deadline, blocked dependency)", type: "deterministic" },
+        { n: 2, label: "Gather task context: description, comments, linked issues", type: "deterministic" },
+        { n: 3, label: "Judge whether this is a genuine risk", type: "judgement" },
+        { n: 4, label: "Assess impact", type: "judgement" },
+        { n: 5, label: "Identify owner (assignee, else reporter)", type: "deterministic" },
+        { n: 6, label: "Write the summary", type: "judgement" },
+        { n: 7, label: "Write to the board: set custom field, create risk register item, post comment", type: "deterministic" },
+        { n: 8, label: "Notify the owner", type: "deterministic" },
+        { n: 9, label: "Decide and take the resolving action", type: "human" },
+      ],
+      stepsSummary: "Nine steps: five deterministic, three judgement, one human.",
+      output: null,
+      notes: null,
+    },
+    {
+      n: 4,
+      name: "Boundaries",
+      paragraphs: [],
+      lists: [
+        { heading: "Scope", items: ["Monitors tasks in one specified project location only."] },
+        {
+          heading: "Triggers",
+          items: [
+            "Deadline slips.",
+            "Work not started with a deadline inside 48 hours (milestones excluded — they mark completion, not work).",
+            "A dependency blocking a task.",
+          ],
+        },
+        {
+          heading: "Non-triggers",
+          items: [
+            "A deadline being changed is not itself a risk; only an approaching deadline with no work started is.",
+            "A blocked dependency where the plan carries enough slack to absorb the delay is not a risk.",
+          ],
+        },
+        {
+          heading: "Never",
+          items: [
+            "Never creates more risk items than there are tasks in the project.",
+            "Never creates duplicates: before writing, it checks the task's custom field state and searches the risk register for an existing item linked to that task key.",
+            "Where one task carries several risks, they are grouped into a single item and listed, not split across items.",
+            "Never changes task status, assignee or dates.",
+          ],
+        },
+      ],
+      steps: null,
+      stepsSummary: null,
+      output: null,
+      notes: null,
+    },
+    {
+      n: 5,
+      name: "Definition of done",
+      paragraphs: [
+        "Every flag states its reason first, so a human can judge in seconds whether the agent read the situation correctly.",
+        "The test set includes negative cases as well as positive ones — a moved deadline with work already underway, and a blocked dependency with slack in the plan. Both must produce silence. False positives are the dangerous direction, so the near-misses are the examples that matter most.",
+        "Sign-off: during the pilot, I review every flag.",
+      ],
+      lists: null,
+      steps: null,
+      stepsSummary: null,
+      output: {
+        marker: "🔴",
+        title: "SOC 2 RISK ALERT",
+        fields: [
+          {
+            label: "Reason",
+            body: "The task remains To Do, and the description and comment state that evidence is missing to pass the vendor-risk test; the description warns this may stall the SOC 2 deadline.",
+          },
+          {
+            label: "Potential impact",
+            body: "Missing evidence could prevent the test from passing and delay SOC 2 evidence collection and readiness.",
+          },
+          {
+            label: "Recommended action",
+            body: "Identify and attach the missing evidence required to pass the test.",
+          },
         ],
+        mention: "@Sanni Cooper",
+        mentionBody: "Please review and provide an update or take the recommended action.",
       },
-      {
-        heading: "Where it hurts",
-        questions: [
-          "Which part of this does the team dread?",
-          "What takes longest, and what gets escalated?",
-          "What does it cost you on the days it goes wrong?",
-        ],
-      },
-      {
-        heading: "What good looks like",
-        questions: [
-          "If this worked perfectly, what is different on Monday morning?",
-          "How would you know it was working without having to ask anyone?",
-          "What would make you turn it off?",
-        ],
-      },
-    ],
-  },
-  {
-    id: "map",
-    verb: "Map",
-    lede: "Then I write down how the work actually happens — not how the process document says it does. The pain is never spread evenly, and it is rarely where the ask pointed.",
-    steps: [
-      {
-        step: "A ticket lands in a shared inbox.",
-        hurts: false,
-        note: "Works fine. Leave it alone.",
-      },
-      {
-        step: "Someone reads it and decides which of nine queues it belongs in.",
-        hurts: true,
-        note: "Three or four minutes each, and wrong often enough that re-routing is somebody's whole morning.",
-      },
-      {
-        step: "For account questions, they open the billing tool in a second tab and match the customer by hand.",
-        hurts: true,
-        note: "The single most-repeated action in the team, and the one nobody lists when you ask what they do.",
-      },
-      {
-        step: "They write a reply, mostly from memory, occasionally from a saved snippet.",
-        hurts: false,
-        note: "Slow, but this is the part they are good at and the part customers notice.",
-      },
-      {
-        step: "Anything about money goes to a senior for sign-off.",
-        hurts: false,
-        note: "A control, not a bottleneck. It stays.",
-      },
-    ],
-    finding:
-      "The ask was 'handle our tickets'. The pain is two steps in the middle — sorting, and looking things up in a second system. That is the thing worth building.",
-  },
-  {
-    id: "treat",
-    verb: "Treat",
-    lede: "So the scope is narrow on purpose, and the out-of-scope list is written down before anyone starts.",
-    inScope: [
-      "Answers two question types — 'where is my order' and 'what am I being charged for' — by reading both systems itself.",
-      "Hands off to a person the moment it is asked anything else, and says so plainly to the customer.",
-      "Drafts replies for a human to send. It does not send anything for the first four weeks.",
-    ],
-    outOfScope: [
-      "Refunds, credits, and anything else that moves money.",
-      "Cancellations and account closures.",
-      "The other seven queues — until this one is boring.",
-    ],
-    measures: [
-      { metric: "Median time to first reply", detail: "On those two question types only. The number the customer actually feels." },
-      { metric: "Share of drafts sent unedited", detail: "If people rewrite every draft, it is not working, however good the demo looked." },
-      { metric: "Handoffs that should not have been", detail: "Watched in both directions — over-eager is a worse failure than over-cautious." },
-    ],
-  },
-] as const;
-
-/**
- * The scope above, drawn as the flow it becomes. Actors are deliberately
- * three, not two: the point of the picture is how few of the steps are the
- * agent's, and a "system" step that is neither agent nor person makes that
- * count honest.
- */
-export const workflow = {
-  eyebrow: "The result",
-  heading: "What the agent actually does",
-  lede: "The same scope, drawn as the flow it turns into. What matters in the picture is where the person still is.",
-  legend: [
-    { actor: "agent", label: "The agent acts" },
-    { actor: "person", label: "A person acts" },
-    { actor: "system", label: "Happens on its own" },
-  ],
-  nodes: [
-    {
-      actor: "system",
-      label: "Inbox",
-      title: "A ticket arrives in the shared inbox.",
-      detail: null,
-      exit: null,
+      notes: null,
     },
     {
-      actor: "agent",
-      label: "Agent",
-      title: "It reads the ticket and decides whether this is one of the two question types it handles.",
-      detail: null,
-      exit: {
-        label: "Person",
-        title: "Anything else stops here and goes to a person, and the customer is told plainly that it has.",
-      },
+      n: 6,
+      name: "Failure modes and blast radius",
+      paragraphs: [
+        "The agent writes to the board: it sets a custom field, creates a risk register item, posts a comment and sends a notification. It does not change task status, assignees or dates, and every write it makes can be undone in seconds. The technical blast radius is low by design.",
+        "The failure that isn't reversible is alert fatigue. Enough false positives and people stop reading the flags — at which point the team is worse off than before, because they now believe something is watching. Deleting a bad risk item doesn't recover that trust.",
+        "So precision is the metric that matters, and it needs a measurement loop rather than an assumption. Each risk register item carries a resolution field: Valid, False positive, or Already handled. Closing a risk means picking one. That costs the human a single click, gives me a running precision figure, and turns every disagreement into a new test case.",
+        "The human checkpoint sits at resolution — the agent surfaces and explains, a person decides and acts. Nothing the agent does requires pre-approval, because nothing it does is hard to undo.",
+      ],
+      lists: null,
+      steps: null,
+      stepsSummary: null,
+      output: null,
+      notes: null,
     },
     {
-      actor: "agent",
-      label: "Agent",
-      title: "It looks the customer up in both systems itself.",
-      detail: "The step that used to mean a second tab and a match done by hand.",
-      exit: null,
+      n: 7,
+      name: "Pilot and measure",
+      paragraphs: [],
+      lists: null,
+      steps: null,
+      stepsSummary: null,
+      output: null,
+      notes: [
+        {
+          label: "Scope",
+          body: "One project, four weeks. Two weeks in shadow mode — writing to the risk register but sending no notifications — so I can review output volume and quality before anyone else is interrupted. Two weeks live.",
+        },
+        { label: "Owner", body: "Me." },
+        { label: "Precision", body: "Flags raised per week, and the share resolved as Valid." },
+        {
+          label: "Recall",
+          body: "At the end of each sprint, ask the project lead what actually slipped or blocked, then check whether the agent had flagged it. Manual and rough, but it's the only measure that speaks to the original problem — risks that go unnoticed.",
+        },
+        {
+          label: "Baseline to beat",
+          body: "Risks currently surface days after they emerge, or not at all.",
+        },
+      ],
     },
     {
-      actor: "agent",
-      label: "Agent",
-      title: "It drafts a reply.",
-      detail: "A draft. It does not send.",
-      exit: null,
+      n: 8,
+      name: "What I'd change",
+      paragraphs: [],
+      lists: null,
+      steps: null,
+      stepsSummary: null,
+      output: null,
+      notes: [
+        {
+          label: "Notification volume",
+          body: "Per-risk direct messages don't scale. A daily digest per owner, with immediate messaging reserved for the highest-severity flags, would hold attention better.",
+        },
+        {
+          label: "Duplicate detection",
+          body: "“No duplicates” was underspecified. The same underlying problem can surface across several linked tasks and produce several flags that are technically distinct and practically identical. This needs a rule at the problem level, not just the task-key level.",
+        },
+        {
+          label: "Wrong calls",
+          body: "The instructive failures are the ones where the agent flagged something the team had already accounted for. Working through those individually is what tightened the non-trigger rules in stage 4 — and it's why the resolution field exists rather than a subjective sense of whether the agent is doing well.",
+        },
+      ],
     },
-    {
-      actor: "person",
-      label: "Person",
-      title: "A person reads the draft, edits it if it needs editing, and sends it.",
-      detail: "For the first four weeks, every single one.",
-      exit: null,
-    },
-  ],
-  note: "Three of the five steps are the agent's, and the one that reaches the customer is not. That is the whole product.",
-} as const;
-
-export const closing = {
-  heading: "Why so narrow",
-  paragraphs: [
-    "A narrow agent that people trust beats a broad one they check twice. The second one costs more than doing the work by hand, and it only has to be wrong loudly once.",
-    "Everything on the out-of-scope list is a thing we might build next quarter. Writing it down is not saying no — it is making the first version small enough to be honest about.",
-  ],
-} as const;
+  ] satisfies ExampleStage[],
+};

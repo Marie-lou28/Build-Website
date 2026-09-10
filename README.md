@@ -3,12 +3,12 @@
 Next.js (App Router) + Tailwind CSS v4 + TypeScript, statically generated,
 deployed on Vercel.
 
-**Status: two pages, one of them a draft.**
+**Status: two pages live on the branch.**
 
 | Route | Contents | State |
 |---|---|---|
 | `/` | Self-introduction, how she works, and life outside work | Her words |
-| `/scoping` | A worked example of how she scopes an agent | **Draft copy** |
+| `/scoping` | Her eight-stage blueprint for scoping an agentic workflow, and the Project Risk Agent worked example | Her words |
 | `/graphs` | Embedded charts | Not built |
 
 An earlier version of this repository contained a full multi-page portfolio,
@@ -18,18 +18,12 @@ remains in git history at commit `485c248` if any of it is wanted back.
 
 ### The content rule
 
-Everything on `/` is Marie-Louise's own words. Nothing about her goes on the
-site unless she said it.
+Every word on both pages is Marie-Louise's, lightly edited for reading on a
+page. Nothing about her goes on the site unless she said it.
 
-`/scoping` is the one deliberate exception, and it is marked as such. Its
-copy — including the entire worked example, which describes no real customer
-— is an assistant-written draft, kept there so the page has a shape to argue
-with rather than an empty file. The page renders a visible draft banner
-saying exactly that.
-
-To ship it: rewrite the copy in `src/lib/scoping.ts`, then set `isDraft` to
-`false` in that same file. That flag is the only thing the banner depends on;
-no component needs touching.
+This held once at cost: an earlier commit put an assistant-written worked
+example on `/scoping` behind a draft banner. It was replaced wholesale by her
+own blueprint rather than edited into shape. Ask her for the content first.
 
 ## Running it locally
 
@@ -72,7 +66,7 @@ src/
   lib/
     site.ts           Site-wide values. Only her name so far
     content.ts        All copy for `/`
-    scoping.ts        All copy for `/scoping`, plus its `isDraft` flag
+    scoping.ts        All copy for `/scoping`: the blueprint and the example
     use-theme.ts      Reads the current theme from the DOM
     clsx.ts           Tiny className helper
 ```

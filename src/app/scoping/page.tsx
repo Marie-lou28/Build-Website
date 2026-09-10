@@ -2,365 +2,315 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Column } from "@/components/column";
 import { clsx } from "@/lib/clsx";
-import { brief, closing, page, stages, workflow } from "@/lib/scoping";
+import {
+  blueprint,
+  example,
+  page,
+  stepTypes,
+  type AlertOutput,
+  type LabelledList,
+  type LabelledNote,
+  type ProcessStep,
+  type StepType,
+} from "@/lib/scoping";
 
 export const metadata: Metadata = {
   title: `${page.title} — Marie-Louise Müller`,
   description: page.lede,
 };
 
-/* The three stages have genuinely different shapes — a set of questions, a
-   workflow, a scope — so they are destructured and rendered explicitly rather
-   than mapped over. Keeps the tuple types intact and each section honest to
-   its own content. */
-const [ask, map, treat] = stages;
+/* One source of truth for how each step type looks. The key, the proportion
+   bar and the step rows all read from it, so a colour cannot come to mean
+   "judgement" in one place and something else in another. */
+const typeStyles: Record<StepType, { chip: string; bar: string }> = {
+  deterministic: { chip: "border-border text-ink-muted", bar: "bg-border" },
+  judgement: { chip: "border-accent/50 text-accent", bar: "bg-accent" },
+  human: { chip: "border-dashed border-ink-faint/60 text-ink-muted", bar: "bg-ink-faint" },
+};
 
-/** Matches the numbered step treatment on the home page. */
-function StageHeading({
-  index,
-  verb,
-  lede,
-}: {
-  index: number;
-  verb: string;
-  lede: string;
-}) {
-  return (
-    <>
-      <div className="flex items-center gap-3">
-        <span className="font-mono text-xs text-ink-faint">
-          {String(index).padStart(2, "0")}
-        </span>
-        <span className="h-px flex-1 bg-border" />
-      </div>
-      <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">{verb}</h2>
-      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-muted text-pretty">
-        {lede}
-      </p>
-    </>
-  );
-}
-
-/** Shown until the copy is Marie-Louise's own. One flag in `scoping.ts`. */
-function DraftBanner() {
-  return (
-    <div
-      role="note"
-      className="mt-10 rounded-lg border border-dashed border-accent/50 bg-accent-soft/50 px-5 py-4"
-    >
-      <p className="eyebrow eyebrow-accent">Draft</p>
-      <p className="mt-2 text-sm leading-relaxed text-ink-muted text-pretty">
-        {page.draftNote}
-      </p>
-    </div>
-  );
-}
+const typeLabel = Object.fromEntries(stepTypes.map((t) => [t.type, t.label])) as Record<
+  StepType,
+  string
+>;
 
 function Intro() {
   return (
     <header className="pt-16 pb-16 sm:pt-24">
       <Column>
-        <p className="eyebrow">How I work</p>
+        <p className="eyebrow">Case study</p>
         <h1 className="mt-5 text-[clamp(2rem,6.5vw,3.5rem)] font-semibold leading-[1.08] tracking-tight text-balance">
           {page.title}
         </h1>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-muted text-pretty sm:text-xl">
           {page.lede}
         </p>
-        {page.isDraft && <DraftBanner />}
+
+        {/* Doubles as a table of contents and as a picture of the method:
+            eight stages, in order, before any of the prose. */}
+        <ol className="mt-12 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+          {blueprint.stages.map((stage) => (
+            <li key={stage.n}>
+              <a
+                href={`#stage-${stage.n}`}
+                className="flex h-full flex-col gap-1.5 bg-bg p-4 transition-colors hover:bg-surface-2"
+              >
+                <span className="font-mono text-xs text-ink-faint">
+                  {String(stage.n).padStart(2, "0")}
+                </span>
+                <span className="text-sm font-medium leading-snug text-pretty">{stage.name}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
       </Column>
     </header>
   );
 }
 
-function Brief() {
+function PartHeader({
+  eyebrow,
+  heading,
+  lede,
+}: {
+  eyebrow: string;
+  heading: string;
+  lede: string;
+}) {
+  return (
+    <>
+      <p className="eyebrow">{eyebrow}</p>
+      <h2 className="mt-5 text-[clamp(1.75rem,5vw,2.75rem)] font-semibold leading-[1.15] tracking-tight text-balance">
+        {heading}
+      </h2>
+      <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-muted text-pretty">{lede}</p>
+    </>
+  );
+}
+
+/** Shared by both parts so a stage looks the same wherever it appears. */
+function StageHeading({ n, name, id }: { n: number; name: string; id?: string }) {
+  return (
+    <>
+      <div className="flex items-center gap-3">
+        <span className="font-mono text-xs text-ink-faint">{String(n).padStart(2, "0")}</span>
+        <span className="h-px flex-1 bg-border" />
+      </div>
+      <h3
+        id={id}
+        className="mt-4 scroll-mt-[calc(var(--nav-h)+1rem)] text-xl font-semibold tracking-tight sm:text-2xl"
+      >
+        {name}
+      </h3>
+    </>
+  );
+}
+
+function Blueprint() {
   return (
     <section className="border-t border-border py-20 sm:py-24">
       <Column>
-        <p className="eyebrow">{brief.eyebrow}</p>
-        <blockquote className="mt-8 border-l-2 border-accent pl-6 sm:pl-8">
-          <p className="text-[clamp(1.4rem,4vw,2rem)] font-medium leading-[1.25] tracking-tight text-balance">
-            &ldquo;{brief.quote}&rdquo;
-          </p>
-          <footer className="mt-4 text-sm text-ink-faint">{brief.attribution}</footer>
-        </blockquote>
-        <p className="mt-8 max-w-2xl text-lg leading-relaxed text-ink-muted text-pretty">
-          {brief.body}
-        </p>
-      </Column>
-    </section>
-  );
-}
+        <PartHeader
+          eyebrow={blueprint.eyebrow}
+          heading={blueprint.heading}
+          lede={blueprint.lede}
+        />
 
-function Ask() {
-  return (
-    <section id="ask" className="scroll-mt-[var(--nav-h)] border-t border-border py-20 sm:py-24">
-      <Column>
-        <StageHeading index={1} verb={ask.verb} lede={ask.lede} />
+        <div className="mt-14 space-y-14">
+          {blueprint.stages.map((stage) => (
+            <div key={stage.n}>
+              <StageHeading n={stage.n} name={stage.name} id={`stage-${stage.n}`} />
+              <p className="mt-4 leading-relaxed text-ink-muted text-pretty">{stage.body}</p>
 
-        <div className="mt-12 space-y-10">
-          {ask.groups.map((group) => (
-            <div key={group.heading}>
-              <h3 className="eyebrow">{group.heading}</h3>
-              <ul className="mt-4 space-y-3">
-                {group.questions.map((question) => (
-                  <li
-                    key={question}
-                    className="flex gap-4 text-lg leading-relaxed text-pretty"
-                  >
-                    <span aria-hidden="true" className="font-mono text-accent">
-                      ?
-                    </span>
-                    <span>{question}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </Column>
-    </section>
-  );
-}
-
-function MapStage() {
-  return (
-    <section id="map" className="scroll-mt-[var(--nav-h)] border-t border-border py-20 sm:py-24">
-      <Column>
-        <StageHeading index={2} verb={map.verb} lede={map.lede} />
-
-        {/* A rail down the left ties the steps into one workflow. The dot is
-            filled for a painful step, but the "Pain point" label carries the
-            same meaning for anyone not seeing the colour. */}
-        <ol className="mt-12 space-y-8 border-l border-border pl-6 sm:pl-8">
-          {map.steps.map((item) => (
-            <li key={item.step} className="relative">
-              {/* Centred on the rail: offset = list padding (24px, 32px at sm)
-                  + half the 1px border + the dot's own radius. Vertically
-                  centred on the first line of text (18px x 1.625 leading). */}
-              <span
-                aria-hidden="true"
-                className={
-                  item.hurts
-                    ? "absolute -left-[29.5px] top-[9.6px] size-2.5 rounded-full bg-accent sm:-left-[37.5px]"
-                    : "absolute -left-[27.5px] top-[11.6px] size-1.5 rounded-full bg-border sm:-left-[35.5px]"
-                }
-              />
-              <p className="text-lg leading-relaxed text-pretty">{item.step}</p>
-              {item.hurts && (
-                <p className="eyebrow eyebrow-accent mt-2">Pain point</p>
-              )}
-              <p className="mt-1.5 leading-relaxed text-ink-muted text-pretty">
-                {item.note}
-              </p>
-            </li>
-          ))}
-        </ol>
-
-        <p className="mt-12 bg-surface-2 px-6 py-6 text-lg leading-relaxed text-pretty sm:px-8">
-          {map.finding}
-        </p>
-      </Column>
-    </section>
-  );
-}
-
-function ScopeList({
-  heading,
-  items,
-  tone,
-}: {
-  heading: string;
-  items: readonly string[];
-  tone: "in" | "out";
-}) {
-  return (
-    <div>
-      <h3 className="eyebrow">{heading}</h3>
-      <ul className="mt-4 space-y-4">
-        {items.map((item) => (
-          <li key={item} className="flex gap-3 leading-relaxed text-pretty">
-            <svg
-              className={
-                tone === "in"
-                  ? "mt-1 size-4 shrink-0 text-accent"
-                  : "mt-1 size-4 shrink-0 text-ink-faint"
-              }
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              {tone === "in" ? <path d="m5 12.5 4.5 4.5L19 7" /> : <path d="M6 6l12 12M18 6 6 18" />}
-            </svg>
-            <span className={tone === "out" ? "text-ink-muted" : undefined}>{item}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function Treat() {
-  return (
-    <section id="treat" className="scroll-mt-[var(--nav-h)] border-t border-border py-20 sm:py-24">
-      <Column>
-        <StageHeading index={3} verb={treat.verb} lede={treat.lede} />
-
-        <div className="mt-12 grid gap-10 sm:grid-cols-2 sm:gap-8">
-          <ScopeList heading="What it does" items={treat.inScope} tone="in" />
-          <ScopeList heading="What it will not do" items={treat.outOfScope} tone="out" />
-        </div>
-
-        <h3 className="eyebrow mt-16">How we will know it worked</h3>
-        <dl className="mt-6 space-y-6">
-          {treat.measures.map((measure) => (
-            <div key={measure.metric} className="border-t border-border pt-4">
-              <dt className="font-medium">{measure.metric}</dt>
-              <dd className="mt-1.5 leading-relaxed text-ink-muted text-pretty">
-                {measure.detail}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </Column>
-    </section>
-  );
-}
-
-/* One source of truth for actor styling: the legend swatches and the flow
-   nodes both read from it, so a colour can never say "agent" in one place and
-   something else in the other. */
-const actorStyles = {
-  agent: { box: "border-accent/40 bg-accent-soft/50", label: "eyebrow eyebrow-accent" },
-  person: { box: "border-border bg-surface-2", label: "eyebrow" },
-  system: { box: "border-dashed border-border", label: "eyebrow" },
-} as const;
-
-/** Vertical connector between two flow nodes. */
-function Connector() {
-  return (
-    <div aria-hidden="true" className="flex justify-center py-1.5">
-      <svg
-        width="12"
-        height="26"
-        viewBox="0 0 12 26"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="text-border"
-      >
-        <path d="M6 0v20" />
-        <path d="M2 16.5 6 21l4-4.5" />
-      </svg>
-    </div>
-  );
-}
-
-function FlowNode({
-  actor,
-  label,
-  title,
-  detail,
-}: {
-  actor: keyof typeof actorStyles;
-  label: string;
-  title: string;
-  detail?: string | null;
-}) {
-  return (
-    <div className={clsx("rounded-lg border px-5 py-4", actorStyles[actor].box)}>
-      <p className={actorStyles[actor].label}>{label}</p>
-      <p className="mt-2 leading-relaxed text-pretty">{title}</p>
-      {detail && (
-        <p className="mt-1.5 text-sm leading-relaxed text-ink-muted text-pretty">{detail}</p>
-      )}
-    </div>
-  );
-}
-
-function Workflow() {
-  return (
-    <section id="workflow" className="scroll-mt-[var(--nav-h)] border-t border-border py-20 sm:py-24">
-      <Column>
-        <p className="eyebrow">{workflow.eyebrow}</p>
-        <h2 className="mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">
-          {workflow.heading}
-        </h2>
-        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-muted text-pretty">
-          {workflow.lede}
-        </p>
-
-        <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
-          {workflow.legend.map((entry) => (
-            <li key={entry.actor} className="flex items-center gap-2">
-              <span
-                aria-hidden="true"
-                className={clsx("size-3 rounded-sm border", actorStyles[entry.actor].box)}
-              />
-              <span className="text-sm text-ink-muted">{entry.label}</span>
-            </li>
-          ))}
-        </ul>
-
-        <ol className="mt-10">
-          {workflow.nodes.map((node, i) => (
-            <li key={node.title}>
-              <FlowNode
-                actor={node.actor}
-                label={node.label}
-                title={node.title}
-                detail={node.detail}
-              />
-
-              {/* The exit path. Kept in the flow rather than branching sideways
-                  so it survives a narrow screen, but marked as leaving it. */}
-              {node.exit && (
-                <div className="mt-3 flex gap-3 pl-4 sm:pl-10">
-                  <span aria-hidden="true" className="mt-4 font-mono text-ink-faint">
-                    &#8627;
-                  </span>
-                  <div className="flex-1 rounded-lg border border-dashed border-border px-5 py-4">
-                    <p className="eyebrow">{node.exit.label}</p>
-                    <p className="mt-2 leading-relaxed text-ink-muted text-pretty">
-                      {node.exit.title}
-                    </p>
-                  </div>
+              {stage.ask && (
+                <div className="mt-6">
+                  <p className="eyebrow">What I ask</p>
+                  <ul className="mt-3 space-y-2.5">
+                    {stage.ask.map((question) => (
+                      <li key={question} className="flex gap-3 leading-relaxed text-pretty">
+                        <span aria-hidden="true" className="font-mono text-accent">
+                          ?
+                        </span>
+                        <span>{question}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
 
-              {i < workflow.nodes.length - 1 && <Connector />}
-            </li>
+              {stage.note && (
+                <p className="mt-6 border-l-2 border-accent pl-5 leading-relaxed text-pretty">
+                  {stage.note}
+                </p>
+              )}
+            </div>
           ))}
-        </ol>
-
-        <p className="mt-10 border-l-2 border-accent pl-6 text-lg leading-relaxed text-pretty sm:pl-8">
-          {workflow.note}
-        </p>
+        </div>
       </Column>
     </section>
   );
 }
 
-function Closing() {
+/** The decomposition, drawn. The proportion bar is the point of the picture:
+    judgement is the minority, and it sits in the middle of the run. */
+function ProcessFlow({ steps, summary }: { steps: ProcessStep[]; summary: string | null }) {
+  return (
+    <div className="mt-6">
+      <div aria-hidden="true" className="flex gap-1">
+        {steps.map((step) => (
+          <span
+            key={step.n}
+            className={clsx("h-2 flex-1 rounded-full", typeStyles[step.type].bar)}
+          />
+        ))}
+      </div>
+
+      {summary && <p className="mt-4 leading-relaxed text-pretty">{summary}</p>}
+
+      <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+        {stepTypes.map((t) => (
+          <li key={t.type} className="flex items-center gap-2">
+            {/* Same fill as the bar segments above: the key is only a key if
+                it is painted in the colours it is explaining. */}
+            <span
+              aria-hidden="true"
+              className={clsx("h-2 w-5 rounded-full", typeStyles[t.type].bar)}
+            />
+            <span className="text-sm text-ink-muted">{t.label}</span>
+          </li>
+        ))}
+      </ul>
+
+      <ol className="mt-8">
+        {steps.map((step) => (
+          <li
+            key={step.n}
+            className="grid grid-cols-[1.75rem_1fr] items-start gap-x-3 gap-y-2 border-t border-border py-3.5 sm:grid-cols-[1.75rem_1fr_auto] sm:gap-x-4"
+          >
+            <span className="pt-0.5 font-mono text-xs text-ink-faint">
+              {String(step.n).padStart(2, "0")}
+            </span>
+            <span className="leading-relaxed text-pretty">{step.label}</span>
+            {/* Sits beside the step on a wide screen and under it on a narrow
+                one, rather than squeezing the step text into a column. */}
+            <span
+              className={clsx(
+                "col-start-2 justify-self-start rounded-full border px-2.5 py-0.5 font-mono text-[0.6875rem] uppercase tracking-[0.08em] sm:col-start-3 sm:mt-0.5",
+                typeStyles[step.type].chip,
+              )}
+            >
+              {typeLabel[step.type]}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function Boundaries({ lists }: { lists: LabelledList[] }) {
+  return (
+    <div className="mt-6 grid gap-8 sm:grid-cols-2">
+      {lists.map((list) => {
+        const forbidding = list.heading === "Never" || list.heading === "Non-triggers";
+        return (
+          <div key={list.heading}>
+            <p className="eyebrow">{list.heading}</p>
+            <ul className="mt-3 space-y-3">
+              {list.items.map((item) => (
+                <li key={item} className="flex gap-3 leading-relaxed text-pretty">
+                  <svg
+                    className={clsx(
+                      "mt-1.5 size-3.5 shrink-0",
+                      forbidding ? "text-ink-faint" : "text-accent",
+                    )}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.25"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    {forbidding ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="m5 12.5 4.5 4.5L19 7" />}
+                  </svg>
+                  <span className={forbidding ? "text-ink-muted" : undefined}>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** A real flag, shown as it appears to the person receiving it. */
+function AlertCard({ output }: { output: AlertOutput }) {
+  return (
+    <figure className="mt-6 overflow-hidden rounded-lg border border-border bg-surface">
+      <figcaption className="flex items-center gap-2 border-b border-border bg-surface-2 px-5 py-3">
+        <span aria-hidden="true">{output.marker}</span>
+        <span className="font-mono text-xs uppercase tracking-[0.12em]">{output.title}</span>
+      </figcaption>
+      <div className="space-y-3 px-5 py-4">
+        {output.fields.map((field) => (
+          <p key={field.label} className="leading-relaxed text-pretty">
+            <span className="font-medium">{field.label}:</span>{" "}
+            <span className="text-ink-muted">{field.body}</span>
+          </p>
+        ))}
+        <p className="border-t border-border pt-3 leading-relaxed text-pretty">
+          <span className="font-medium text-accent">{output.mention}</span>{" "}
+          <span className="text-ink-muted">{output.mentionBody}</span>
+        </p>
+      </div>
+    </figure>
+  );
+}
+
+function NoteList({ notes }: { notes: LabelledNote[] }) {
+  return (
+    <dl className="mt-6 space-y-5">
+      {notes.map((note) => (
+        <div key={note.label} className="border-t border-border pt-4">
+          <dt className="font-medium">{note.label}</dt>
+          <dd className="mt-1.5 leading-relaxed text-ink-muted text-pretty">{note.body}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function WorkedExample() {
   return (
     <section className="border-t border-border py-20 sm:py-24">
       <Column>
-        <p className="eyebrow">{closing.heading}</p>
-        <div className="mt-8 space-y-6">
-          {closing.paragraphs.map((paragraph) => (
-            <p key={paragraph} className="text-lg leading-relaxed text-ink-muted text-pretty">
-              {paragraph}
-            </p>
+        <PartHeader eyebrow={example.eyebrow} heading={example.heading} lede={example.lede} />
+
+        <div className="mt-14 space-y-14">
+          {example.stages.map((stage) => (
+            <div key={stage.n}>
+              <StageHeading n={stage.n} name={stage.name} />
+
+              {stage.paragraphs.length > 0 && (
+                <div className="mt-4 space-y-4">
+                  {stage.paragraphs.map((paragraph) => (
+                    <p key={paragraph} className="leading-relaxed text-ink-muted text-pretty">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+              )}
+
+              {stage.steps && <ProcessFlow steps={stage.steps} summary={stage.stepsSummary} />}
+              {stage.lists && <Boundaries lists={stage.lists} />}
+              {stage.output && <AlertCard output={stage.output} />}
+              {stage.notes && <NoteList notes={stage.notes} />}
+            </div>
           ))}
         </div>
 
-        <p className="mt-14">
+        <p className="mt-16">
           <Link
             href="/#approach"
             className="inline-flex items-center gap-2 text-sm text-ink-muted transition-colors hover:text-ink"
@@ -389,12 +339,8 @@ export default function ScopingPage() {
   return (
     <>
       <Intro />
-      <Brief />
-      <Ask />
-      <MapStage />
-      <Treat />
-      <Workflow />
-      <Closing />
+      <Blueprint />
+      <WorkedExample />
     </>
   );
 }

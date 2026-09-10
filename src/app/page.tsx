@@ -75,7 +75,7 @@ function Approach() {
             href="/scoping"
             className="inline-flex items-center gap-2 text-sm text-ink-muted transition-colors hover:text-ink"
           >
-            A worked example: scoping an agent
+            A blueprint: how I scope an agentic workflow
             <svg
               className="size-4"
               viewBox="0 0 24 24"
