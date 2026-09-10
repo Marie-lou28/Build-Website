@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Column } from "@/components/column";
-import { brief, closing, page, stages } from "@/lib/scoping";
+import { clsx } from "@/lib/clsx";
+import { brief, closing, page, stages, workflow } from "@/lib/scoping";
 
 export const metadata: Metadata = {
   title: `${page.title} — Marie-Louise Müller`,
@@ -230,6 +231,122 @@ function Treat() {
   );
 }
 
+/* One source of truth for actor styling: the legend swatches and the flow
+   nodes both read from it, so a colour can never say "agent" in one place and
+   something else in the other. */
+const actorStyles = {
+  agent: { box: "border-accent/40 bg-accent-soft/50", label: "eyebrow eyebrow-accent" },
+  person: { box: "border-border bg-surface-2", label: "eyebrow" },
+  system: { box: "border-dashed border-border", label: "eyebrow" },
+} as const;
+
+/** Vertical connector between two flow nodes. */
+function Connector() {
+  return (
+    <div aria-hidden="true" className="flex justify-center py-1.5">
+      <svg
+        width="12"
+        height="26"
+        viewBox="0 0 12 26"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="text-border"
+      >
+        <path d="M6 0v20" />
+        <path d="M2 16.5 6 21l4-4.5" />
+      </svg>
+    </div>
+  );
+}
+
+function FlowNode({
+  actor,
+  label,
+  title,
+  detail,
+}: {
+  actor: keyof typeof actorStyles;
+  label: string;
+  title: string;
+  detail?: string | null;
+}) {
+  return (
+    <div className={clsx("rounded-lg border px-5 py-4", actorStyles[actor].box)}>
+      <p className={actorStyles[actor].label}>{label}</p>
+      <p className="mt-2 leading-relaxed text-pretty">{title}</p>
+      {detail && (
+        <p className="mt-1.5 text-sm leading-relaxed text-ink-muted text-pretty">{detail}</p>
+      )}
+    </div>
+  );
+}
+
+function Workflow() {
+  return (
+    <section id="workflow" className="scroll-mt-[var(--nav-h)] border-t border-border py-20 sm:py-24">
+      <Column>
+        <p className="eyebrow">{workflow.eyebrow}</p>
+        <h2 className="mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">
+          {workflow.heading}
+        </h2>
+        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-muted text-pretty">
+          {workflow.lede}
+        </p>
+
+        <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
+          {workflow.legend.map((entry) => (
+            <li key={entry.actor} className="flex items-center gap-2">
+              <span
+                aria-hidden="true"
+                className={clsx("size-3 rounded-sm border", actorStyles[entry.actor].box)}
+              />
+              <span className="text-sm text-ink-muted">{entry.label}</span>
+            </li>
+          ))}
+        </ul>
+
+        <ol className="mt-10">
+          {workflow.nodes.map((node, i) => (
+            <li key={node.title}>
+              <FlowNode
+                actor={node.actor}
+                label={node.label}
+                title={node.title}
+                detail={node.detail}
+              />
+
+              {/* The exit path. Kept in the flow rather than branching sideways
+                  so it survives a narrow screen, but marked as leaving it. */}
+              {node.exit && (
+                <div className="mt-3 flex gap-3 pl-4 sm:pl-10">
+                  <span aria-hidden="true" className="mt-4 font-mono text-ink-faint">
+                    &#8627;
+                  </span>
+                  <div className="flex-1 rounded-lg border border-dashed border-border px-5 py-4">
+                    <p className="eyebrow">{node.exit.label}</p>
+                    <p className="mt-2 leading-relaxed text-ink-muted text-pretty">
+                      {node.exit.title}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {i < workflow.nodes.length - 1 && <Connector />}
+            </li>
+          ))}
+        </ol>
+
+        <p className="mt-10 border-l-2 border-accent pl-6 text-lg leading-relaxed text-pretty sm:pl-8">
+          {workflow.note}
+        </p>
+      </Column>
+    </section>
+  );
+}
+
 function Closing() {
   return (
     <section className="border-t border-border py-20 sm:py-24">
@@ -276,6 +393,7 @@ export default function ScopingPage() {
       <Ask />
       <MapStage />
       <Treat />
+      <Workflow />
       <Closing />
     </>
   );

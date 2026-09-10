@@ -123,6 +123,64 @@ export const stages = [
   },
 ] as const;
 
+/**
+ * The scope above, drawn as the flow it becomes. Actors are deliberately
+ * three, not two: the point of the picture is how few of the steps are the
+ * agent's, and a "system" step that is neither agent nor person makes that
+ * count honest.
+ */
+export const workflow = {
+  eyebrow: "The result",
+  heading: "What the agent actually does",
+  lede: "The same scope, drawn as the flow it turns into. What matters in the picture is where the person still is.",
+  legend: [
+    { actor: "agent", label: "The agent acts" },
+    { actor: "person", label: "A person acts" },
+    { actor: "system", label: "Happens on its own" },
+  ],
+  nodes: [
+    {
+      actor: "system",
+      label: "Inbox",
+      title: "A ticket arrives in the shared inbox.",
+      detail: null,
+      exit: null,
+    },
+    {
+      actor: "agent",
+      label: "Agent",
+      title: "It reads the ticket and decides whether this is one of the two question types it handles.",
+      detail: null,
+      exit: {
+        label: "Person",
+        title: "Anything else stops here and goes to a person, and the customer is told plainly that it has.",
+      },
+    },
+    {
+      actor: "agent",
+      label: "Agent",
+      title: "It looks the customer up in both systems itself.",
+      detail: "The step that used to mean a second tab and a match done by hand.",
+      exit: null,
+    },
+    {
+      actor: "agent",
+      label: "Agent",
+      title: "It drafts a reply.",
+      detail: "A draft. It does not send.",
+      exit: null,
+    },
+    {
+      actor: "person",
+      label: "Person",
+      title: "A person reads the draft, edits it if it needs editing, and sends it.",
+      detail: "For the first four weeks, every single one.",
+      exit: null,
+    },
+  ],
+  note: "Three of the five steps are the agent's, and the one that reaches the customer is not. That is the whole product.",
+} as const;
+
 export const closing = {
   heading: "Why so narrow",
   paragraphs: [
