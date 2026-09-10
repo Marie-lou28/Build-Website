@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteNav } from "@/components/site-nav";
 import { intro } from "@/lib/content";
 import { site } from "@/lib/site";
 import "./globals.css";
@@ -54,10 +56,11 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        {/* A nav bar arrives with /scoping, when there is somewhere to navigate. */}
+        <SiteNav />
         <main id="main" className="flex-1">
           {children}
         </main>
+        <SiteFooter />
       </body>
     </html>
   );

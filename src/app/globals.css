@@ -14,6 +14,11 @@
 :root {
   color-scheme: light;
 
+  /* Height of the sticky nav. The hero subtracts it so that "full height"
+     means the viewport, not the viewport plus a bar. In-page anchors use it
+     as their scroll margin so headings don't land underneath the bar. */
+  --nav-h: 3.75rem;
+
   --bg: #fcfbf9;
   --surface: #ffffff;
   --surface-2: #f5f3ef;
@@ -79,6 +84,14 @@ body {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-faint);
+}
+
+/* Accent variant of .eyebrow.
+   A `text-accent` utility cannot override the colour above: Tailwind v4 puts
+   its utilities in a cascade layer, and unlayered rules like `.eyebrow` beat
+   layered ones regardless of specificity. So the variant lives here too. */
+.eyebrow-accent {
+  color: var(--accent);
 }
 
 /* Keyboard focus stays clearly visible everywhere. */

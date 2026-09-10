@@ -1,15 +1,11 @@
-import { ThemeToggle } from "@/components/theme-toggle";
+import Link from "next/link";
+import { Column } from "@/components/column";
 import { analogy, facts, intro, likes, outsideWork } from "@/lib/content";
 import { site } from "@/lib/site";
 
-/** Shared content column. Everything on the page lines up to this width. */
-function Column({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto w-full max-w-3xl px-6 sm:px-8">{children}</div>;
-}
-
 function Hero() {
   return (
-    <header className="flex min-h-svh flex-col justify-center py-24">
+    <header className="flex min-h-[calc(100svh-var(--nav-h))] flex-col justify-center py-24">
       <Column>
         <h1 className="text-[clamp(2.25rem,8vw,4.5rem)] font-semibold leading-[1.05] tracking-tight text-balance">
           {site.name}
@@ -43,7 +39,7 @@ function Hero() {
 /** The centrepiece: her analogy, given the full width of the page. */
 function Approach() {
   return (
-    <section id="approach" className="scroll-mt-8 border-t border-border py-20 sm:py-28">
+    <section id="approach" className="scroll-mt-[var(--nav-h)] border-t border-border py-20 sm:py-28">
       <Column>
         <p className="eyebrow">How I work</p>
         <p className="mt-5 text-[clamp(1.6rem,4.6vw,2.5rem)] font-medium leading-[1.2] tracking-tight text-balance">
@@ -73,6 +69,27 @@ function Approach() {
             </li>
           ))}
         </ol>
+
+        <p className="mt-14">
+          <Link
+            href="/scoping"
+            className="inline-flex items-center gap-2 text-sm text-ink-muted transition-colors hover:text-ink"
+          >
+            A worked example: scoping an agent
+            <svg
+              className="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </Link>
+        </p>
       </Column>
     </section>
   );
@@ -137,25 +154,11 @@ function OutsideWork() {
 export default function Home() {
   return (
     <>
-      {/* Floats above the content rather than sitting in a header bar, since
-          there is no nav to put it in yet. */}
-      <div className="fixed right-4 top-4 z-50 sm:right-6 sm:top-6">
-        <ThemeToggle />
-      </div>
-
       <Hero />
       <Approach />
       <Likes />
       <Facts />
       <OutsideWork />
-
-      <footer className="border-t border-border py-10">
-        <Column>
-          <p className="text-sm text-ink-faint">
-            {site.name} &middot; {new Date().getFullYear()}
-          </p>
-        </Column>
-      </footer>
     </>
   );
 }
