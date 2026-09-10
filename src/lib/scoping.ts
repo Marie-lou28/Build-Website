@@ -132,14 +132,14 @@ export const stepTypes: { type: StepType; label: string; plural: string }[] = [
 export const example = {
   eyebrow: "Part two",
   heading: "Project Risk Agent",
-  lede: "The same eight stages, applied.",
+  lede: "The same eight stages, applied to an agent built in ClickUp.",
   stages: [
     {
       n: 1,
       name: "Problem and cost of the status quo",
       paragraphs: [
         "Project risks are spotted late or not at all. Today the team relies on someone noticing that something is off — usually in standup or a weekly review, and usually after the fact. Risks sit undetected for days.",
-        "Twice in a six-month period this caused a project to slip into the following quarter, deferring roughly 200k of revenue each time. The cost is not only revenue: late detection creates internal bottlenecks and erodes customer confidence in delivery dates.",
+        "Twice in a six-month period this caused a project to slip into the following quarter, deferring a six-figure sum of revenue each time. The cost is not only revenue: late detection creates internal bottlenecks and erodes customer confidence in delivery dates.",
       ],
       lists: null,
       steps: null,
