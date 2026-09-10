@@ -20,6 +20,19 @@ export type BlueprintStage = {
 };
 
 export type ProcessStep = { n: number; label: string; type: StepType };
+
+/** Terminals bookend the flow; the middle kinds reuse the StepType language. */
+export type FlowKind = StepType | "trigger" | "stop";
+
+export type FlowNode = {
+  kind: FlowKind;
+  label: string;
+  title: string;
+  /** Label on the arrow leaving this node. Only set where the path forks. */
+  edgeLabel: string | null;
+  /** The other path out of a decision. */
+  branch: { edgeLabel: string; kind: FlowKind; label: string; title: string } | null;
+};
 export type LabelledList = { heading: string; items: string[] };
 export type LabelledNote = { label: string; body: string };
 
@@ -128,6 +141,104 @@ export const stepTypes: { type: StepType; label: string; plural: string }[] = [
   { type: "judgement", label: "Judgement", plural: "judgement" },
   { type: "human", label: "Human-owned", plural: "human" },
 ];
+
+/**
+ * The whole agent in one picture: what starts it, the one point where it can
+ * decide to say nothing, and where it hands over to a person. Drawn from the
+ * same nine steps as stage 3 — that list is about composition, this is about
+ * sequence, the branch and the loop back.
+ */
+export const endToEnd = {
+  heading: "The agent, end to end",
+  platform: "ClickUp",
+  nodes: [
+    {
+      kind: "trigger",
+      label: "Trigger",
+      title:
+        "A deadline slips, work sits unstarted with a deadline inside 48 hours, or a dependency blocks a task.",
+      edgeLabel: null,
+      branch: null,
+    },
+    {
+      kind: "deterministic",
+      label: "Deterministic",
+      title: "A scheduled query picks up the signal.",
+      edgeLabel: null,
+      branch: null,
+    },
+    {
+      kind: "deterministic",
+      label: "Deterministic",
+      title: "Gather task context: description, comments, linked issues.",
+      edgeLabel: null,
+      branch: null,
+    },
+    {
+      kind: "judgement",
+      label: "Judgement",
+      title: "Is this a genuine risk?",
+      edgeLabel: "Yes",
+      branch: {
+        edgeLabel: "No",
+        kind: "stop",
+        label: "Stop",
+        title: "No flag. The agent stays silent.",
+      },
+    },
+    {
+      kind: "judgement",
+      label: "Judgement",
+      title: "Assess impact.",
+      edgeLabel: null,
+      branch: null,
+    },
+    {
+      kind: "deterministic",
+      label: "Deterministic",
+      title: "Identify owner (assignee, else reporter).",
+      edgeLabel: null,
+      branch: null,
+    },
+    {
+      kind: "judgement",
+      label: "Judgement",
+      title: "Write the summary.",
+      edgeLabel: null,
+      branch: null,
+    },
+    {
+      kind: "deterministic",
+      label: "Deterministic",
+      title:
+        "Write to the board: set custom field, create risk register item, post comment.",
+      edgeLabel: null,
+      branch: null,
+    },
+    {
+      kind: "deterministic",
+      label: "Deterministic",
+      title: "Notify the owner.",
+      edgeLabel: null,
+      branch: null,
+    },
+    {
+      kind: "human",
+      label: "Human-owned",
+      title: "A person decides and takes the resolving action.",
+      edgeLabel: null,
+      branch: null,
+    },
+    {
+      kind: "human",
+      label: "Human-owned",
+      title: "Close the risk: Valid, False positive, or Already handled.",
+      edgeLabel: null,
+      branch: null,
+    },
+  ] satisfies FlowNode[],
+  loop: "Every resolution feeds the running precision figure, and every disagreement becomes a new test case.",
+};
 
 export const example = {
   eyebrow: "Part two",

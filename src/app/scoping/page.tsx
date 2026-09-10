@@ -4,10 +4,13 @@ import { Column } from "@/components/column";
 import { clsx } from "@/lib/clsx";
 import {
   blueprint,
+  endToEnd,
   example,
   page,
   stepTypes,
   type AlertOutput,
+  type FlowKind,
+  type FlowNode,
   type LabelledList,
   type LabelledNote,
   type ProcessStep,
@@ -207,6 +210,133 @@ function ProcessFlow({ steps, summary }: { steps: ProcessStep[]; summary: string
   );
 }
 
+/* Terminals are neutral and rounder; the three middle kinds keep the same
+   colour language as the proportion bar so the page teaches it only once. */
+const flowStyles: Record<FlowKind, { box: string; chip: string }> = {
+  trigger: { box: "rounded-2xl border-border bg-surface-2", chip: "border-border text-ink-muted" },
+  deterministic: { box: "rounded-md border-border bg-bg", chip: "border-border text-ink-muted" },
+  judgement: { box: "rounded-md border-accent/50 bg-accent-soft/50", chip: "border-accent/50 text-accent" },
+  human: { box: "rounded-md border-dashed border-ink-faint/60 bg-bg", chip: "border-dashed border-ink-faint/60 text-ink-muted" },
+  stop: { box: "rounded-2xl border-dashed border-border bg-surface-2", chip: "border-border text-ink-muted" },
+};
+
+function FlowBox({ kind, label, title }: { kind: FlowKind; label: string; title: string }) {
+  return (
+    <div className={clsx("border px-4 py-3", flowStyles[kind].box)}>
+      <span
+        className={clsx(
+          "inline-block rounded-full border px-2 py-0.5 font-mono text-[0.625rem] uppercase tracking-[0.08em]",
+          flowStyles[kind].chip,
+        )}
+      >
+        {label}
+      </span>
+      <p className="mt-2 leading-relaxed text-pretty">{title}</p>
+    </div>
+  );
+}
+
+/** A downward edge, optionally labelled where the path forks. */
+function Edge({ label }: { label?: string | null }) {
+  return (
+    <div className="flex items-center justify-center gap-2 py-1">
+      <svg
+        width="10"
+        height="22"
+        viewBox="0 0 10 22"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="text-ink-faint/70"
+        aria-hidden="true"
+      >
+        <path d="M5 0v16" />
+        <path d="M1.5 13 5 17l3.5-4" />
+      </svg>
+      {label && (
+        <span className="font-mono text-[0.625rem] uppercase tracking-[0.08em] text-ink-faint">
+          {label}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function EndToEnd() {
+  return (
+    <figure className="mt-12 rounded-xl border border-border bg-surface px-4 py-6 sm:px-8 sm:py-8">
+      <figcaption className="border-b border-border pb-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <span className="font-semibold tracking-tight">{endToEnd.heading}</span>
+          <span className="font-mono text-xs uppercase tracking-[0.12em] text-ink-faint">
+            {endToEnd.platform}
+          </span>
+        </div>
+        {/* The box carries its own key: it appears before stage 3, so it
+            cannot lean on the one down there. */}
+        <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+          {stepTypes.map((t) => (
+            <li key={t.type} className="flex items-center gap-2">
+              <span aria-hidden="true" className={clsx("h-2 w-5 rounded-full", typeStyles[t.type].bar)} />
+              <span className="text-sm text-ink-muted">{t.label}</span>
+            </li>
+          ))}
+        </ul>
+      </figcaption>
+
+      <ol className="mx-auto mt-6 max-w-xl">
+        {endToEnd.nodes.map((node: FlowNode, i) => (
+          <li key={node.title}>
+            <FlowBox kind={node.kind} label={node.label} title={node.title} />
+
+            {/* The path that ends here. It stays in the column rather than
+                branching sideways so it survives a narrow screen, and hangs
+                off a dashed rail so it reads as a spur rather than as part of
+                the main line — the arrow below belongs to the other path. */}
+            {node.branch && (
+              <div className="ml-5 border-l border-dashed border-border pl-5 pt-3 sm:ml-9 sm:pl-6">
+                <span className="font-mono text-[0.625rem] uppercase tracking-[0.08em] text-ink-faint">
+                  {node.branch.edgeLabel}
+                </span>
+                <div className="mt-1.5">
+                  <FlowBox
+                    kind={node.branch.kind}
+                    label={node.branch.label}
+                    title={node.branch.title}
+                  />
+                </div>
+              </div>
+            )}
+
+            {i < endToEnd.nodes.length - 1 && <Edge label={node.edgeLabel} />}
+          </li>
+        ))}
+      </ol>
+
+      <div className="mt-6 flex gap-3 border-t border-border pt-5">
+        <svg
+          className="mt-0.5 size-4 shrink-0 text-accent"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M3 12a9 9 0 0 1 15.5-6.2L21 8" />
+          <path d="M21 3v5h-5" />
+          <path d="M21 12a9 9 0 0 1-15.5 6.2L3 16" />
+          <path d="M3 21v-5h5" />
+        </svg>
+        <p className="text-sm leading-relaxed text-ink-muted text-pretty">{endToEnd.loop}</p>
+      </div>
+    </figure>
+  );
+}
+
 function Boundaries({ lists }: { lists: LabelledList[] }) {
   return (
     <div className="mt-6 grid gap-8 sm:grid-cols-2">
@@ -287,7 +417,9 @@ function WorkedExample() {
       <Column>
         <PartHeader eyebrow={example.eyebrow} heading={example.heading} lede={example.lede} />
 
-        <div className="mt-14 space-y-14">
+        <EndToEnd />
+
+        <div className="mt-16 space-y-14">
           {example.stages.map((stage) => (
             <div key={stage.n}>
               <StageHeading n={stage.n} name={stage.name} />

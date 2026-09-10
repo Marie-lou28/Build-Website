@@ -8,7 +8,7 @@ deployed on Vercel.
 | Route | Contents | State |
 |---|---|---|
 | `/` | Self-introduction, how she works, and life outside work | Her words |
-| `/scoping` | Her eight-stage blueprint for scoping an agentic workflow, and the Project Risk Agent worked example | Her words |
+| `/scoping` | Her eight-stage blueprint for scoping an agentic workflow, and the Project Risk Agent worked example, including an end-to-end flow diagram of the agent | Her words |
 | `/graphs` | Embedded charts | Not built |
 
 An earlier version of this repository contained a full multi-page portfolio,
